@@ -3,11 +3,22 @@
 	set autogain
 	config frequency
 	choose device
+	read samples
 [FILTER]
 	basic bandpass filter
 [DRAW]
 	draw in SDL/OpenGL waterfall
+	output data to web
 [CORE]
 	multi threaded
+	read IQ thread
+	processing thread
+	config thread?
+	log utilities
 [MOD]
 	fm demod
+	wbfn demod
+	am demod
+[AUDIO]
+	play sound
+	stream sound to web
