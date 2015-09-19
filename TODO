@@ -1,0 +1,13 @@
+[TUNER]
+	set gain
+	set autogain
+	config frequency
+	choose device
+[FILTER]
+	basic bandpass filter
+[DRAW]
+	draw in SDL/OpenGL waterfall
+[CORE]
+	multi threaded
+[MOD]
+	fm demod
