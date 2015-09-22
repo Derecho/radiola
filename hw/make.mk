@@ -1,0 +1,10 @@
+DIR_HW = hw/
+SOURCES_HW += hw/hw.c
+OBJECTS_HW += $(SOURCES_HW:.c=.o)
+LDFLAGS += -lrtlsdr
+
+
+OBJECTS_DIR_HW += $(subst $(DIR_HW),$(BUILD_DIR)$(DIR_HW),$(OBJECTS_HW))
+
+OBJECTS += $(OBJECTS_HW)
+OBJECTS_FINAL += $(OBJECTS_DIR_HW)

@@ -1,15 +1,20 @@
 CC=gcc
-CFLAGS=-I../../r820t/include  
-LDFLAGS= `pkg-config --libs libusb` -L../../../r820t -lr820t -Wl,-rpath=../../../r820t
-
-SOURCE += $(wildcard *.c)
+CFLAGS=
+#LDFLAGS= `pkg-config --libs libusb` -L../../../r820t -lr820t -Wl,-rpath=../../../r820t
+LDFLAGS=`pkg-config --libs libusb` -lrtlsdr
+SOURCE = $(wildcard *.c)
+OBJECTS = 
 BIN = $(SOURCE:.c=)
 
-make: $(BIN)
-	@echo $<
 
 %: %.c
-	$(CC) $(LDFLAGS) $(CFLAGS)   $<  -o $@ 
+	$(CC) $(LDFLAGS) $(CFLAGS) $<  -o $@ 
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $(BUILD_DIR)$@
+
+make: $(BIN)
+
 
 clean:
 	rm -f $(BIN)
