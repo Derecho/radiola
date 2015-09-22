@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 //rtlsdr
-#include <rtl-sdr.h>   
+#include <hw/hw.h>   
 
 int main(  )
 {

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 //r820t
-#include <rtl-sdr.h>
+#include <hw/hw.h>
 
 void read_samples( uint32_t dev_index )
 {

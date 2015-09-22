@@ -1,7 +1,7 @@
 CC=gcc
-CFLAGS=
+CFLAGS=-I../
 #LDFLAGS= `pkg-config --libs libusb` -L../../../r820t -lr820t -Wl,-rpath=../../../r820t
-LDFLAGS=`pkg-config --libs libusb` -lrtlsdr
+LDFLAGS=`pkg-config --libs libusb` -lrtlsdr ../radiola.o
 SOURCE = $(wildcard *.c)
 OBJECTS = 
 BIN = $(SOURCE:.c=)
@@ -14,7 +14,6 @@ BIN = $(SOURCE:.c=)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $(BUILD_DIR)$@
 
 make: $(BIN)
-
 
 clean:
 	rm -f $(BIN)
