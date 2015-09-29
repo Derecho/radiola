@@ -23,3 +23,4 @@ make: $(OBJECTS)
 clean:
 	rm -f $(PROJECT)
 	rm -f $(OBJECTS_FINAL)
+	rm -f *.o
