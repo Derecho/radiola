@@ -8,6 +8,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <SDL2/SDL.h>
+
 //to draw waterfall
 typedef struct glui_waterfall_t
 {
@@ -19,6 +21,9 @@ typedef struct glui_waterfall_t
 
 typedef struct glui_t
 {
+	SDL_Window *win;
+	SDL_Renderer *rend;
+
 	glui_waterfall_t *wf;
 } glui_t;
 
@@ -38,3 +43,5 @@ int glui_waterfall_data( glui_t *w, int len, uint8_t *buf );
 uint8_t glui_waterfall_color( uint8_t d );
 //close terminal ui
 int glui_close( glui_t *t );
+
+#endif

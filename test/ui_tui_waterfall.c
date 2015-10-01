@@ -9,7 +9,7 @@
 
 #define SAMPLE_RATE  2048000
 
-#define CENTER_FREQ  100500000
+#define CENTER_FREQ  446500000
 #define FFT_LEVEL    10
 #define FFT_SIZE     (1 << FFT_LEVEL)
 #define BUF_LENGHT   (2 * FFT_SIZE)
