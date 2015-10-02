@@ -3,7 +3,7 @@
 #include <math.h>
 
 //radiola
-#include <draw/tui.h>
+#include <draw/glui.h>
 #include <hw/hw.h>
 
 #define SAMPLE_RATE  2048000
@@ -253,6 +253,76 @@ int main()
 {
 
 
+	int i,j;
+	uint8_t *buf, *sample_buf;
+	int buf_len, sample_len;
+	uint32_t dev_num;
+
+	glui_t *t = NULL;
+	glui_waterfall_t *w = NULL;
+
+	if ( sdr_init() == -1 )
+	{
+		goto main_exit;
+	}
+
+	sine_table( FFT_LEVEL );
+
+
+	//printf("%x\n",t);
+	//open GUI
+	if ( glui_init( &t ) == -1 )
+	{
+		printf("Cannot set glui\n");
+		return 1;
+	}
+
+	//printf("%x\n",t);
+	if ( glui_waterfall( &t, &w ) == -1 )
+	{
+		printf("Cannot set waterfall\n");
+		return 1;
+	}
+	
+	dev_num = rtlsdr_get_device_count();
+	if ( dev_num < 1 )
+	{
+		printf( "Cannot find any device" );
+		goto main_exit;
+	}
+
+	buf_len = sizeof(char)*w->w;
+	buf = malloc( buf_len );
+
+	sample_len = BUF_LENGHT;
+	sample_buf = malloc( sample_len );
+	
+	srand(0); //fake seed
+	for ( i=0; i<400;i++ )
+	{
+		//for (j=0; j<buf_len; j++)
+		//	sample_buf[j] = (uint8_t)((rand()&0xff));
+
+		//read some samples
+		sdr_get_samples( sample_buf, sample_len );
+
+		//do fft
+		//simple_fft( sample_buf, sample_len/2 );
+
+		//prepare to show on the screen
+		if (normalise( sample_buf, sample_len, buf, buf_len ) == -1)
+		{
+			printf("Cannot normalise\n");
+		}
+		glui_waterfall_data( t, buf_len, buf );
+		//printf("\n\b");
+		usleep(100000);
+	}
+
+main_exit:
+	//close gui, restore terminal mode
+	glui_close( t );
+	sdr_close();
 
 	return 0;
 }

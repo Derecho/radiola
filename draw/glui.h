@@ -17,15 +17,28 @@ typedef struct glui_waterfall_t
 	int h,w;
 	uint8_t *buf;
 	size_t buf_len;
+	int cur_h;
+
+	SDL_Renderer *rend;
 } glui_waterfall_t;
 
 typedef struct glui_t
 {
-	SDL_Window *win;
-	SDL_Renderer *rend;
 
+	int h, w;
+
+	SDL_Window *win;
+	
 	glui_waterfall_t *wf;
 } glui_t;
+
+typedef struct glui_color_t 
+{
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+	uint8_t a;
+} glui_color_t;
 
 //prepare terminal ui
 int glui_init( glui_t **t );
@@ -40,7 +53,7 @@ int glui_waterfall_update( glui_t *w );
 //push one line of data to buffer
 int glui_waterfall_data( glui_t *w, int len, uint8_t *buf );
 //return color
-uint8_t glui_waterfall_color( uint8_t d );
+glui_color_t glui_waterfall_color( uint8_t d );
 //close terminal ui
 int glui_close( glui_t *t );
 
