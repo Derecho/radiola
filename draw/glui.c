@@ -1,7 +1,7 @@
 #include "glui.h"
 
 #define DEFAULT_TITLE "RADIOLA"
-#define SCREEN_X 640
+#define SCREEN_X 1024
 #define SCREEN_Y 480
 
 int glui_init( glui_t **t )
@@ -144,9 +144,9 @@ glui_color_t glui_waterfall_color( uint8_t d )
 {
 	glui_color_t c;
 	
-	c.r = d;
-	c.g = d;
-	c.b = d;
+	c.r = d*10;
+	c.g = d*10;
+	c.b = d*10;
 
 	return c;
 }

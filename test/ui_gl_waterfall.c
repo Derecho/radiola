@@ -11,7 +11,7 @@
 #define CENTER_FREQ  446500000
 #define FFT_LEVEL    10
 #define FFT_SIZE     (1 << FFT_LEVEL)
-#define BUF_LENGHT   (2 * FFT_SIZE)
+#define SAMPLE_LENGHT   (2 * FFT_SIZE)
 #define PRESCALE     8
 #define POSTSCALE    2
 
@@ -105,12 +105,15 @@ int normalise( uint8_t *ibuf, int ilen, uint8_t *obuf, int olen )
 	int i,j,m;
 	int ppi;
 
+	/*
 	if ( ilen >= olen )
 	{
 		ppi = ilen / olen;
 	} else {
 		return -1;
 	}
+	*/
+	ppi = 1;
 	m = 0;
 	i = 0;
 	while ( (i < ilen) && (m < olen) )
@@ -221,29 +224,31 @@ int simple_fft( uint8_t *buf, int len )
 {
 	int i,j;
 	uint16_t p;
+	uint16_t buf1[SAMPLE_LENGHT];
+	uint16_t buf2[SAMPLE_LENGHT];
 	int fft_len;
 
 	for (i=0; i<len; i++)
 	{
-		buf[i] = buf[i] * PRESCALE;
+		buf1[i] = buf[i] * PRESCALE;
 	}
 
-	fix_fft( (uint16_t *)buf, FFT_LEVEL );
+	fix_fft( (uint16_t *)buf1, FFT_LEVEL );
 
-	for (i=0; i<FFT_SIZE; i++)
+	for (i=0; i<FFT_SIZE; i+=1)
 	{
 		//buf1[i] = rtl_out.buf[i];
 		//p = buf1[i] * buf1[i];
 		j = i*2;
-		p = (int16_t)real_conj(buf[j], buf[j + 1]);
-		buf[i] += p;
+		p = (int16_t)real_conj(buf1[j], buf1[j + 1]);
+		buf2[i] = p;
 	}
 
 	fft_len = FFT_SIZE / 2;
 	for (i=0; i<fft_len; i++)
 	{
-		buf[i] =         (int)log10(POSTSCALE * (float)buf[i+fft_len]);
-		buf[i+fft_len] = (int)log10(POSTSCALE * (float)buf[i]);
+		buf[i] =         (int)log10(POSTSCALE * (float)buf2[i+fft_len]);
+		buf[i+fft_len] = (int)log10(POSTSCALE * (float)buf2[i]);
 	}
 
 	return 0;
@@ -291,10 +296,11 @@ int main()
 		goto main_exit;
 	}
 
+	//screen normilised buffer to draw
 	buf_len = sizeof(char)*w->w;
 	buf = malloc( buf_len );
 
-	sample_len = BUF_LENGHT;
+	sample_len = SAMPLE_LENGHT;
 	sample_buf = malloc( sample_len );
 	
 	srand(0); //fake seed
@@ -307,16 +313,16 @@ int main()
 		sdr_get_samples( sample_buf, sample_len );
 
 		//do fft
-		simple_fft( sample_buf, sample_len/2 );
+		simple_fft( sample_buf, sample_len );
 
 		//prepare to show on the screen
-		if (normalise( sample_buf, sample_len/2, buf, buf_len ) == -1)
+		//if (normalise( sample_buf, sample_len, buf, buf_len ) == -1)
 		{
-			printf("Cannot normalise\n");
+			//printf("Cannot normalise\n");
 		}
-		glui_waterfall_data( t, buf_len, buf );
+		glui_waterfall_data( t, sample_len/2, sample_buf );
 		//printf("\n\b");
-		usleep(100000);
+		usleep(10000);
 	}
 
 main_exit:
