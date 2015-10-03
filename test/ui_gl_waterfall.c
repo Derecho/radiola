@@ -307,10 +307,10 @@ int main()
 		sdr_get_samples( sample_buf, sample_len );
 
 		//do fft
-		//simple_fft( sample_buf, sample_len/2 );
+		simple_fft( sample_buf, sample_len/2 );
 
 		//prepare to show on the screen
-		if (normalise( sample_buf, sample_len, buf, buf_len ) == -1)
+		if (normalise( sample_buf, sample_len/2, buf, buf_len ) == -1)
 		{
 			printf("Cannot normalise\n");
 		}
