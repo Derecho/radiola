@@ -12,7 +12,7 @@
 #define CENTER_FREQ  446500000
 #define FFT_LEVEL    10
 #define FFT_SIZE     (1 << FFT_LEVEL)
-#define BUF_LENGHT   (2 * FFT_SIZE)
+#define SAMPLE_LENGHT   (2 * FFT_SIZE)
 #define PRESCALE     8
 #define POSTSCALE    2
 
@@ -103,28 +103,30 @@ int sdr_get_samples( uint8_t *buf, int len )
 //better to have size  size mod olen == 0
 int normalise( uint8_t *ibuf, int ilen, uint8_t *obuf, int olen )
 {
-	int i,j,m;
-	int ppi;
+	uint32_t i,j,m;
+	uint32_t ppi;
+	uint32_t sum;
+	div_t d;
 
 	if ( ilen >= olen )
 	{
-		ppi = ilen / olen;
+		d = div(ilen,olen);
+		ppi = d.quot;
+		if (d.rem > 0)
+			ppi += 1;
 	} else {
+		printf("Input buffer smaller ther output buffer\n");
 		return -1;
 	}
+
 	m = 0;
 	i = 0;
-	while ( (i < ilen) && (m < olen) )
+	for (i=0,m=0; i < ilen+ppi; i += ppi, m++)
 	{
-		uint32_t sum=0;
-		for ( j=0; j<ppi; j++ );
+		sum = 0;
+		for (j=0;j<ppi;j++)
 			sum += ibuf[i+j];
-		sum /= ppi;
-		obuf[m] = sum;
-		//printf("%d-", obuf[m] );
-
-		i += ppi;
-		m += 1;
+		obuf[m] = sum/ppi; 
 	}
 
 	return 0;
@@ -222,29 +224,31 @@ int simple_fft( uint8_t *buf, int len )
 {
 	int i,j;
 	uint16_t p;
+	uint16_t buf1[SAMPLE_LENGHT];
+	uint16_t buf2[SAMPLE_LENGHT];
 	int fft_len;
 
 	for (i=0; i<len; i++)
 	{
-		buf[i] = buf[i] * PRESCALE;
+		buf1[i] = buf[i] * PRESCALE;
 	}
 
-	fix_fft( (uint16_t *)buf, FFT_LEVEL );
+	fix_fft( (uint16_t *)buf1, FFT_LEVEL );
 
-	for (i=0; i<FFT_SIZE; i++)
+	for (i=0; i<FFT_SIZE; i+=1)
 	{
 		//buf1[i] = rtl_out.buf[i];
 		//p = buf1[i] * buf1[i];
 		j = i*2;
-		p = (int16_t)real_conj(buf[j], buf[j + 1]);
-		buf[i] += p;
+		p = (int16_t)real_conj(buf1[j], buf1[j + 1]);
+		buf2[i] = p;
 	}
 
 	fft_len = FFT_SIZE / 2;
 	for (i=0; i<fft_len; i++)
 	{
-		buf[i] =         (int)log10(POSTSCALE * (float)buf[i+fft_len]);
-		buf[i+fft_len] = (int)log10(POSTSCALE * (float)buf[i]);
+		buf[i] =         (int)log10(POSTSCALE * (float)buf2[i+fft_len]);
+		buf[i+fft_len] = (int)log10(POSTSCALE * (float)buf2[i]);
 	}
 
 	return 0;
@@ -302,11 +306,11 @@ int main()
 	buf_len = sizeof(char)*w->w;
 	buf = malloc( buf_len );
 
-	sample_len = BUF_LENGHT;
+	sample_len = SAMPLE_LENGHT;
 	sample_buf = malloc( sample_len );
 	
 	srand(0); //fake seed
-	for ( i=0; i<20;i++ )
+	for ( i=0; i<400;i++ )
 	{
 		//for (j=0; j<buf_len; j++)
 		//	sample_buf[j] = (uint8_t)((rand()&0xff));
@@ -315,16 +319,17 @@ int main()
 		sdr_get_samples( sample_buf, sample_len );
 
 		//do fft
-		//simple_fft( sample_buf, sample_len/2 );
+		simple_fft( sample_buf, sample_len );
 
 		//prepare to show on the screen
-		if (normalise( sample_buf, sample_len, buf, buf_len ) == -1)
+		if (normalise( sample_buf, sample_len/2, buf, buf_len ) == -1)
 		{
 			printf("Cannot normalise\n");
 		}
-		tui_waterfall_data( t, buf_len, buf );
+		//tui_waterfall_data( t, sample_len/2, sample_buf );
+		tui_waterfall_data( t, buf_len, buf);
 		//printf("\n\b");
-		sleep(1);
+		usleep(10000);
 	}
 
 main_exit:
