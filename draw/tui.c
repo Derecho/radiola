@@ -190,6 +190,7 @@ uint8_t tui_waterfall_color( uint8_t d )
 	
 	uint8_t color=15;
 	
+	
 	/*
 	if ( d < 50 )
 	{
@@ -208,6 +209,7 @@ uint8_t tui_waterfall_color( uint8_t d )
 		color = 21;
 	}
 	*/
+	
 	
 	
 	if ( d == 0 )
@@ -236,7 +238,7 @@ uint8_t tui_waterfall_color( uint8_t d )
 		color = 44;
 	} else
 	{
-		color = 230;
+		color = 45;
 	}
 	
 	/*

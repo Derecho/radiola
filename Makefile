@@ -11,7 +11,9 @@ OBJECTS=
 OBJECTS_FINAL=
 
 include draw/make.mk
+include filt/make.mk
 include hw/make.mk
+include mod/make.mk
 
 make: $(OBJECTS) 
 	$(CC) $(OBJECTS_FINAL) $(PROJECT).c -o $(PROJECT) $(LDFLAGS)
