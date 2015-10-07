@@ -7,20 +7,27 @@
 [FILTER]
 	basic bandpass filter
 [DRAW]
-	draw in SDL/OpenGL waterfall
+	#draw in SDLchinese simple reader/OpenGL waterfall
+	#	make ajustable screen size
 	output data to web
+	add more options for waterfall
 [CORE]
 	multi threaded
 	read IQ thread
 	processing thread
 	config thread?
 	log utilities
+	add alsa audio preprocessing
 [MOD]
-	fm demod
+	#fm demod
 	wbfn demod
 	am demod
 [AUDIO]
 	play sound
 	stream sound to web
+	rewrite play/record sound just primitive version added
+[TEST]
+	stream waterfall post/pre filtered
+	stream waterfall post/pre fm demodulated
 
 rtlsdr? no dithering? in with brain it is?

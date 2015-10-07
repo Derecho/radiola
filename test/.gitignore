@@ -2,4 +2,5 @@ get_device_list
 read_samples
 ui_tui_waterfall
 ui_gl_waterfall
+get_audo_list
 *.o

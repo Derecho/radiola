@@ -1,7 +1,7 @@
 DIR_HW = hw/
-SOURCES_HW += hw/hw.c
+SOURCES_HW += hw/aud.c hw/hw.c hw/hw_eeprom.c
 OBJECTS_HW += $(SOURCES_HW:.c=.o)
-LDFLAGS += -lrtlsdr
+LDFLAGS += -lrtlsdr -lasound
 
 
 OBJECTS_DIR_HW += $(subst $(DIR_HW),$(BUILD_DIR)$(DIR_HW),$(OBJECTS_HW))
