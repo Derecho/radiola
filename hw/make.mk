@@ -1,5 +1,5 @@
 DIR_HW = hw/
-SOURCES_HW += hw/aud.c hw/hw.c hw/hw_eeprom.c
+SOURCES_HW += hw/aud.c hw/hw.c hw/hw_eeprom.c hw/sdr.c
 OBJECTS_HW += $(SOURCES_HW:.c=.o)
 LDFLAGS += -lrtlsdr -lasound
 

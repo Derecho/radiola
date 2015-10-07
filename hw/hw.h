@@ -7,6 +7,8 @@
 //#include <r820t.h>
 #include <rtl-sdr.h>
 
+
+
 uint32_t hw_get_device_count(void);
 const char* hw_get_device_name(uint32_t index);
 int hw_get_device_usb_strings(uint32_t index,

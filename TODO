@@ -4,6 +4,9 @@
 	config frequency
 	choose device
 	read samples
+	add device naming
+	add reading/writing eeprom
+	add special setting setting in eeprom
 [FILTER]
 	basic bandpass filter
 [DRAW]
