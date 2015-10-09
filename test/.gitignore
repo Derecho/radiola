@@ -3,4 +3,6 @@ read_samples
 ui_tui_waterfall
 ui_gl_waterfall
 get_audo_list
+ui_gl_fm
+ui_gl_filter
 *.o

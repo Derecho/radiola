@@ -22,7 +22,7 @@ int16_t* Sinewave;
 int N_WAVE, LOG2_N_WAVE;
 double* power_table;
 
-int sdr_init()
+int dng_init()
 {
 	int ret;
 	uint32_t dev_index = 0;
@@ -74,7 +74,7 @@ int sdr_init()
 }
 
 
-int sdr_close()
+int dng_close()
 {
 	//close tunner
 	if ( dev != NULL)
@@ -86,7 +86,7 @@ int sdr_close()
 	return -1;
 }
 
-int sdr_get_samples( uint8_t *buf, int len )
+int dng_get_samples( uint8_t *buf, int len )
 {
 	int ret, read_num;
 
@@ -265,7 +265,7 @@ int main()
 	tui_t *t = NULL;
 	tui_waterfall_t *w = NULL;
 
-	if ( sdr_init() == -1 )
+	if ( dng_init() == -1 )
 	{
 		goto main_exit;
 	}
@@ -316,7 +316,7 @@ int main()
 		//	sample_buf[j] = (uint8_t)((rand()&0xff));
 
 		//read some samples
-		sdr_get_samples( sample_buf, sample_len );
+		dng_get_samples( sample_buf, sample_len );
 
 		//do fft
 		simple_fft( sample_buf, sample_len );
@@ -335,7 +335,7 @@ int main()
 main_exit:
 	//close gui, restore terminal mode
 	tui_close( t );
-	sdr_close();
+	dng_close();
 
 	return 0;
 }
