@@ -66,7 +66,7 @@ int sdr_open_device( sdr_t *sdr, int dev_index );
 
 
 //get device structure from sdr manager
-dongle_t* sdr_get_device( sdr_t *sdr, int dev_index);
+dongle_t* sdr_get_device_id( sdr_t *sdr, int dev_index);
 
 //get index in list of devices of structure from outer device index
 //? do we need?
@@ -91,9 +91,9 @@ int dongle_set_agc( dongle_t *dongle, int mode);
 int dongle_set_sample_rate( dongle_t *dongle, uint32_t rate );
 
 uint32_t dongle_get_freq( dongle_t *dongle );
-int dongle_get_gain( dongle_t *dongle );
+int      dongle_get_gain( dongle_t *dongle );
 uint32_t dongle_get_sample_rate( dongle_t *dongle );
-int dongle_read_samples( dongle_t *dongle, uint8_t *buf, int len );
+int      dongle_read_samples( dongle_t *dongle, uint8_t *buf, int len );
 //int dongle_close();
 
 #endif

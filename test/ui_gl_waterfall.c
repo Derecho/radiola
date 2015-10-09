@@ -5,6 +5,7 @@
 //radiola
 #include <draw/glui.h>
 #include <hw/hw.h>
+#include <hw/sdr.h>
 
 #define SAMPLE_RATE  2048000
 
@@ -15,89 +16,11 @@
 #define PRESCALE     8
 #define POSTSCALE    2
 
-static rtlsdr_dev_t *dev = NULL;
-
 int16_t* Sinewave;
 int N_WAVE, LOG2_N_WAVE;
 double* power_table;
 
-int dng_init()
-{
-	int ret;
-	uint32_t dev_index = 0;
 
-	//open tunner
-	ret = rtlsdr_open(&dev, (uint32_t)dev_index);
-	if ( ret < 0 )
-	{
-		printf("Cannot open device %02d\n", dev_index );
-		return -1;
-	}
-
-	ret = rtlsdr_reset_buffer(dev);
-	if ( ret < 0 )
-	{
-		printf("Couldnt reset buffer\n");
-		return -1;
-	}
-
-	ret = rtlsdr_set_sample_rate(dev, SAMPLE_RATE);
-	if ( ret < 0 )
-	{
-		printf("Coulnt set sample rate to %d\n", SAMPLE_RATE);
-		return -1;
-	}
-
-	ret = rtlsdr_set_center_freq( dev, CENTER_FREQ );
-	if ( ret < 0 )
-	{
-		printf("Couldnt set freq %d\n", CENTER_FREQ);
-		return -1;
-	}
-
-	ret = rtlsdr_set_tuner_gain_mode( dev, 1 );
-	if ( ret < 0 )
-	{
-		printf("Cannot set auto gain mode\n");
-		return -1;
-	}
-
-	ret = rtlsdr_set_agc_mode( dev, 1);
-	if ( ret < 0 )
-	{
-		printf("Cannot set agc mode\n");
-		return -1;
-	}
-
-	return 0;
-}
-
-
-int dng_close()
-{
-	//close tunner
-	if ( dev != NULL)
-	{
-		rtlsdr_close( dev );
-		dev = NULL;
-		return 0;
-	}
-	return -1;
-}
-
-int dng_get_samples( uint8_t *buf, int len )
-{
-	int ret, read_num;
-
-	ret = rtlsdr_read_sync( dev, buf, len, &read_num );
-	if (ret < 0)
-	{
-		printf("sync read failed\n");
-		return -1;
-	}
-
-	return 0;
-}
 
 //better to have size  size mod olen == 0
 int normalise( uint8_t *ibuf, int ilen, uint8_t *obuf, int olen )
@@ -263,13 +186,27 @@ int main()
 	int buf_len, sample_len;
 	uint32_t dev_num;
 
+	sdr_t *sdr = NULL;
+	dongle_t *dongle = NULL;
+
+
 	glui_t *t = NULL;
 	glui_waterfall_t *w = NULL;
 
-	if ( dng_init() == -1 )
+	if ( (sdr = sdr_init()) == NULL )
 	{
+		printf("Cannot init sdr manager\n");
 		goto main_exit;
 	}
+
+	if ( sdr_open_device( sdr, 0 ) != 0 )
+	{
+		printf("Cannot open dongle 0\n");
+		goto main_exit;
+	}
+	dongle = sdr_get_device_id( sdr, 0 );
+	dongle_set_freq( dongle, CENTER_FREQ );
+	dongle_set_sample_rate( dongle, SAMPLE_RATE );
 
 	sine_table( FFT_LEVEL );
 
@@ -289,12 +226,14 @@ int main()
 		return 1;
 	}
 	
+	/*
 	dev_num = rtlsdr_get_device_count();
 	if ( dev_num < 1 )
 	{
 		printf( "Cannot find any device" );
 		goto main_exit;
 	}
+	*/
 
 	//screen normilised buffer to draw
 	buf_len = sizeof(char)*w->w;
@@ -310,7 +249,7 @@ int main()
 		//	sample_buf[j] = (uint8_t)((rand()&0xff));
 
 		//read some samples
-		dng_get_samples( sample_buf, sample_len );
+		dongle_read_samples( dongle, sample_buf, sample_len );
 
 		//do fft
 		simple_fft( sample_buf, sample_len );
@@ -328,7 +267,7 @@ int main()
 main_exit:
 	//close gui, restore terminal mode
 	glui_close( t );
-	dng_close();
+	sdr_close( sdr );
 
 	return 0;
 }

@@ -293,5 +293,22 @@ uint32_t dongle_get_sample_rate( dongle_t *dongle )
 
 int dongle_read_samples( dongle_t *dongle, uint8_t *buf, int len )
 {
-	return -1;
+	int ret, read_num;
+
+	if ( dongle == NULL )
+		return -1;
+
+	if ( dongle->dev == NULL )
+		return -1;
+
+
+
+	ret = hw_read_sync( dongle->dev, buf, len, &read_num );
+	if ( ret < 0 )
+	{
+		printf("Couldnt read samples\n");
+		return -1;
+	}
+
+	return 0;
 }
