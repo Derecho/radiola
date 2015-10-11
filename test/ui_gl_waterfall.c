@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
+#include <unistd.h>
+#include <getopt.h>
 
 //radiola
 #include <draw/glui.h>
@@ -20,7 +23,16 @@ int16_t* Sinewave;
 int N_WAVE, LOG2_N_WAVE;
 double* power_table;
 
-
+void helper( char *exec_name )
+{
+	const char help_str[]="Usage: ./%s [OPTIONS]\n\
+-f [FREQ] - set center frequency\n\
+-s [SAMPLE] - set sample rate\n\
+-d [DEVICE] - choose device\n\
+-? - print help\n\
+";
+	printf( help_str, exec_name );
+}
 
 //better to have size  size mod olen == 0
 int normalise( uint8_t *ibuf, int ilen, uint8_t *obuf, int olen )
@@ -177,14 +189,23 @@ int simple_fft( uint8_t *buf, int len )
 	return 0;
 }
 
-int main()
+int main( int argc, char **argv )
 {
 
 
 	int i,j;
+	int c;
 	uint8_t *buf, *sample_buf;
 	int buf_len, sample_len;
 	uint32_t dev_num;
+	//config params
+	int      config_device      = 0;
+	uint32_t config_freq        = CENTER_FREQ;
+	//int      config_gain        = 1;
+	//int      config_agc         = 1;
+	uint32_t config_sample_rate = SAMPLE_RATE;
+	char *endptr = NULL;
+
 
 	sdr_t *sdr = NULL;
 	dongle_t *dongle = NULL;
@@ -193,20 +214,51 @@ int main()
 	glui_t *t = NULL;
 	glui_waterfall_t *w = NULL;
 
+	// get all argument configs
+	opterr = 0;
+	while ( (c = getopt(argc, argv, "f:s:d:")) != -1 )
+	{
+		switch ( c )
+		{
+			case 'f':
+				config_freq = atoi( optarg );
+				break;
+			case 's':
+				config_sample_rate = atoi( optarg );
+				break;
+			case 'd':
+				//printf(" %s \n", optarg);
+				config_device = atoi( optarg );
+				break;
+			case '?':
+				helper( argv[0] );
+				break;
+			case ':':
+				printf("\n");
+				break;
+			default:
+				printf("Unknow option\n");
+				return -1;
+		}
+	}
+
+
 	if ( (sdr = sdr_init()) == NULL )
 	{
 		printf("Cannot init sdr manager\n");
+		sdr = NULL;
 		goto main_exit;
 	}
 
-	if ( sdr_open_device( sdr, 0 ) != 0 )
+	if ( sdr_open_device( sdr, config_device ) != 0 )
 	{
-		printf("Cannot open dongle 0\n");
+		printf("MAIN:Cannot open device %d\n", config_device);
+		sdr->dongle  = NULL;
 		goto main_exit;
 	}
-	dongle = sdr_get_device_id( sdr, 0 );
-	dongle_set_freq( dongle, CENTER_FREQ );
-	dongle_set_sample_rate( dongle, SAMPLE_RATE );
+	dongle = sdr_get_device_id( sdr, config_device );
+	dongle_set_freq( dongle, config_freq );
+	dongle_set_sample_rate( dongle, config_sample_rate );
 
 	sine_table( FFT_LEVEL );
 
@@ -266,8 +318,8 @@ int main()
 
 main_exit:
 	//close gui, restore terminal mode
-	glui_close( t );
-	sdr_close( sdr );
+	//glui_close( t );
+	//sdr_close( sdr );
 
 	return 0;
 }

@@ -157,7 +157,7 @@ int sdr_close( sdr_t *sdr )
 	{	
 		if ( sdr->dongle != NULL )
 		{
-			if ( sdr->dongle->dev == NULL )
+			if ( sdr->dongle->dev != NULL )
 			{
 				hw_close( sdr->dongle->dev );
 				free( sdr->dongle->dev );
