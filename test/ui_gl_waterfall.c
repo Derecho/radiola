@@ -192,7 +192,7 @@ int simple_fft( uint8_t *buf, int len )
 int main( int argc, char **argv )
 {
 
-
+	int ret;
 	int i,j;
 	int c;
 	uint8_t *buf, *sample_buf;
@@ -244,7 +244,7 @@ int main( int argc, char **argv )
 
 
 	if ( (sdr = sdr_init()) == NULL )
-	{
+	{		
 		printf("Cannot init sdr manager\n");
 		sdr = NULL;
 		goto main_exit;
@@ -257,8 +257,15 @@ int main( int argc, char **argv )
 		goto main_exit;
 	}
 	dongle = sdr_get_device_id( sdr, config_device );
-	dongle_set_freq( dongle, config_freq );
-	dongle_set_sample_rate( dongle, config_sample_rate );
+	ret = 0;
+	ret != dongle_set_freq( dongle, config_freq );
+	ret != dongle_set_sample_rate( dongle, config_sample_rate );
+	ret != dongle_set_gain( dongle, 0 );
+	ret != dongle_set_agc( dongle, 40 );
+	if (ret != 0)
+	{
+		printf("Cannot properly config device\n");
+	}
 
 	sine_table( FFT_LEVEL );
 
@@ -318,8 +325,8 @@ int main( int argc, char **argv )
 
 main_exit:
 	//close gui, restore terminal mode
-	//glui_close( t );
-	//sdr_close( sdr );
+	glui_close( t );
+	sdr_close( sdr );
 
 	return 0;
 }
