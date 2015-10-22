@@ -244,7 +244,7 @@ int dongle_set_sample_rate( dongle_t *dongle, uint32_t rate )
 	ret = hw_set_sample_rate( dongle->dev, rate );
 	if ( ret < 0 )
 	{
-		printf("Cannot set sample rate %ud\n", rate);
+		printf("Cannot set sample rate to %uMsps\n", rate);
 		return -1;
 	}
 

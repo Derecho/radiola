@@ -4,6 +4,7 @@
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
+#include <complex.h>
 
 #include <hw/hw.h>
 #include <hw/sdr.h>
@@ -11,8 +12,8 @@
 #define SAMPLE_RATE   1000000
 #define RESAMPLE_RATE 50000
 
-#define CENTER_FREQ   446500000
-#define FFT_LEVEL     10
+#define CENTER_FREQ   101100000
+#define FFT_LEVEL     12
 #define FFT_SIZE      (1 << FFT_LEVEL)
 #define SAMPLE_LENGHT (2 * FFT_SIZE)
 #define PRESCALE      8
@@ -167,13 +168,39 @@ void rotate_90(uint8_t *buf, uint32_t len)
 	}
 }
 
+float to_float(uint8_t x) {
+    return (1.0f/127.0f)*(((float)x)-127.0f);
+}
+
+//float ph_ch( uint8_t i1, uint8_t q1, uint8_t i2, uint8_t q2)
+float ph_ch( uint8_t i1, uint8_t q1 )
+{
+	static float complex last=CMPLXF(0.0f, 0.0f);
+	float out;
+	float complex xy,c1;
+	//float c2;
+
+	//c1 = to_float(i1) + I*to_float(q1);
+	c1 = CMPLXF( to_float(i1), to_float(q1) );
+	//c2 = to_float(i2) + I*to_float(q2);
+	//c2 = CMPLXF( to_float(i2), to_float(q2) );
+	xy = conjf(last)*c1;
+	out = cargf( xy );
+	last = c1;
+
+	return out;
+}
+
 int main( int argc, char **argv )
 {
 
 	int c;
 	int ret;
+	int i,j,m;
 
-	uint8_t *buf,    *sample_buf;
+	uint8_t *buf, *sample_buf;
+	float	*fbuf;
+	signed short *sound_buf;
 	int 	buf_len, sample_len;
 
 	//commandline config params
@@ -232,28 +259,71 @@ int main( int argc, char **argv )
 	ret != dongle_set_freq( dongle, config_freq );
 	ret != dongle_set_sample_rate( dongle, config_sample_rate );
 	ret != dongle_set_gain( dongle, 0 );
-	ret != dongle_set_agc( dongle, 40 );
+	ret != dongle_set_agc( dongle, 10 );
 	if (ret != 0)
 	{
 		printf("Cannot properly config device\n");
 	}
 
 	sample_len = SAMPLE_LENGHT;
-	sample_buf = malloc( sample_len );
+	sample_buf = malloc( SAMPLE_LENGHT );
+	fbuf = malloc( SAMPLE_LENGHT*sizeof(float) );
+	sound_buf = malloc( (SAMPLE_LENGHT/20)*sizeof(signed short) );
 
 	while ( 1 )
 	{
 		//read plain samples
-		dongle_read_samples( dongle, sample_buf, sample_len );
+		dongle_read_samples( dongle, sample_buf, SAMPLE_LENGHT );
+		//convert data to float
+		//for ( i=0; i<sample_len; i++)
+		//{
+		//	fbuf[i] = to_float(sample_buf[i]);
+		//}
 		//delay
-		//rotate by 90 degrees
-		rotate_90( sample_buf, sample_len );
+		//rotate by 90 degrees uint8_t
+		//rotate_90( sample_buf, sample_len );
+
+		//with unsigned data phace change
+		#if 0
+		for (i=0,j=0; i<sample_len-2; i+=2,j++)
+		{
+			uint8_t c[2];
+			uint8_t *a=&sample_buf[i], *b=&sample_buf[i+2];
+			double angle;
+			float pcm;
+
+			c[0] = a[0]*b[0] - a[1]*b[1];
+			c[1] = a[1]*b[0] + a[0]*b[1];
+			angle = atan2((double)c[1],(double)c[0]);
+			pcm = (int)(angle / 3.14159 * (1<<14));
+			fbuf[j] = pcm;
+		}
+		#endif
+		//phase change with float
+		for (i=0; i<SAMPLE_LENGHT-4; i+=2)
+		{
+			//fbuf[i] = ph_ch( sample_buf[i], sample_buf[i+1], 
+			//	sample_buf[i+2], sample_buf[i+3] );
+			fbuf[i] = ph_ch( sample_buf[i], sample_buf[i+1]);
+		}
+
 		//downsample
 		//sample rate 1Mhz downsample to 50Khz 
+		for ( i=0,m=0; i<SAMPLE_LENGHT; i+=20, m+=1 )
+		{
+			float sum=0.0;
+			for (j=i;j<i+20;j++)
+			{
+				sum += fbuf[j];
+			}
+			//sound_buf[m] = (signed short)(10000.0f*(sum/20.0));
+			sound_buf[m] = (signed short)(10000.0f*(sum/20.0));
+		}
+		write(1, sound_buf, ((SAMPLE_LENGHT/20)*sizeof(signed short)));
 
 		//play
 		
-		usleep(10000);
+		//usleep(1);
 		//printf("Sample\n");
 	}
 
