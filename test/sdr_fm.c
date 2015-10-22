@@ -13,7 +13,7 @@
 #define RESAMPLE_RATE 50000
 
 #define CENTER_FREQ   101100000
-#define FFT_LEVEL     12
+#define FFT_LEVEL     18
 #define FFT_SIZE      (1 << FFT_LEVEL)
 #define SAMPLE_LENGHT (2 * FFT_SIZE)
 #define PRESCALE      8
@@ -191,6 +191,57 @@ float ph_ch( uint8_t i1, uint8_t q1 )
 	return out;
 }
 
+//delay filtering
+void delay_filt( uint8_t *buf, int buf_len )
+{
+	//delay length
+	const int n=10;
+	
+	int i=0;
+	uint32_t cycle=0;
+	uint32_t avg_i=0, avg_q=0;
+	uint32_t cyc_buffer_i[n],delay_i=0;
+	uint32_t cyc_buffer_q[n],delay_q=0;
+	uint8_t in1=0,in2=0,out1=0,out2=0;
+
+	memset( cyc_buffer_i, 0, n*sizeof(uint32_t) );
+	memset( cyc_buffer_q, 0, n*sizeof(uint32_t) );
+
+	//for (i=0; i<(buf_len-(n*2));i+=2)
+	for (i=0 ; i<(buf_len-1) ; i+=2 )
+	//for (i=0; i<1000; i+=2)
+	{
+		in1 = buf[i];
+		in2 = buf[i+1];
+
+		//average
+		avg_i += (uint32_t)in1;
+		avg_q += (uint32_t)in2;
+
+		delay_i = cyc_buffer_i[cycle];
+		delay_q = cyc_buffer_q[cycle];
+		
+		cyc_buffer_i[cycle] = avg_i;
+		cyc_buffer_q[cycle] = avg_q;
+		cycle = cycle + 1;
+		//cycle += 1;
+		if ( cycle >= n )
+		{
+			cycle = 0;
+		}
+
+		out1 = (avg_i - delay_i)/n;
+		out2 = (avg_q - delay_q)/n;
+
+		buf[i]   = out1;
+		buf[i+1] = out2;
+
+		//printf("%d,avg=[%d,%d],delay=[%d,%d],in=[%d,%d],out=[%d,%d]\n",
+		//	cycle, avg_i,avg_q,delay_i,delay_q,in1,in2,out1,out2);
+
+	}
+}
+
 int main( int argc, char **argv )
 {
 
@@ -279,7 +330,10 @@ int main( int argc, char **argv )
 		//{
 		//	fbuf[i] = to_float(sample_buf[i]);
 		//}
-		//delay
+		//delay boxed filter
+		delay_filt( sample_buf, sample_len );
+
+
 		//rotate by 90 degrees uint8_t
 		//rotate_90( sample_buf, sample_len );
 
@@ -319,10 +373,11 @@ int main( int argc, char **argv )
 			//sound_buf[m] = (signed short)(10000.0f*(sum/20.0));
 			sound_buf[m] = (signed short)(10000.0f*(sum/20.0));
 		}
-		write(1, sound_buf, ((SAMPLE_LENGHT/20)*sizeof(signed short)));
-
-		//play
 		
+
+		//write to play
+		write(1, sound_buf, ((SAMPLE_LENGHT/20)*sizeof(signed short)));
+		//exit(0);
 		//usleep(1);
 		//printf("Sample\n");
 	}
