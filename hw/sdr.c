@@ -160,7 +160,8 @@ int sdr_close( sdr_t *sdr )
 			if ( sdr->dongle->dev != NULL )
 			{
 				hw_close( sdr->dongle->dev );
-				free( sdr->dongle->dev );
+				//all ready free'd by rtlsdr
+				//free( sdr->dongle->dev );
 				sdr->dongle->dev = NULL;
 			}
 			free( sdr->dongle );
