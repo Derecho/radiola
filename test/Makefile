@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-I../ 
+CFLAGS=-std=gnu11 -I../ 
 #LDFLAGS= `pkg-config --libs libusb` -L../../../r820t -lr820t -Wl,-rpath=../../../r820t
 LDFLAGS=`pkg-config --libs libusb` `sdl2-config --cflags --libs` -lrtlsdr -lm ../radiola.o -lasound
 SOURCE = $(wildcard *.c)
