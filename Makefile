@@ -20,9 +20,13 @@ make: $(OBJECTS)
 	ld -r $(OBJECTS_FINAL) -o $(PROJECT).o
 
 %.o: %.c
+	@mkdir -p `dirname $(BUILD_DIR)$@`
 	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $(BUILD_DIR)$@
 
 clean:
 	rm -f $(PROJECT)
 	rm -f $(OBJECTS_FINAL)
 	rm -f *.o
+
+distclean: clean
+	rm -rf $(BUILD_DIR)
